@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Libro contable</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='10' y='6' width='44' height='52' rx='4' fill='%236b1b2b'/%3E%3Crect x='15' y='11' width='34' height='42' rx='2' fill='none' stroke='%23d6b565' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ============ Variables ============ */
+:root {
+  --cuero: #2b2420;
+  --vino: #6b1b2b;
+  --vino-hondo: #4f1320;
+  --oro: #b8913f;
+  --oro-claro: #d6b565;
+  --crema: #f4ead3;
+  --hoja: rgba(248, 239, 217, .88);
+  --campo: rgba(255, 251, 238, .9);
+  --tinta: #33241a;
+  --tinta-suave: #65503c;
+  --verde: #3b5a34;
+  --linea: #b9a074;
+  --error: #8f1d1d;
+  --display: 'IM Fell English', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --texto: 'Crimson Pro', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html { font-size: 17px; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--texto);
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: var(--tinta);
+  font-variant-numeric: lining-nums;
+  background-color: var(--cuero);
+}
+
+/* Fondo fijo: cuero para acceso, papel para el panel */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+body.vista-acceso::before {
+  background-color: var(--cuero);
+  background-image: linear-gradient(rgba(18, 12, 8, .30), rgba(18, 12, 8, .50)), url('img/cubierta.jpg');
+}
+body.vista-panel::before {
+  background-color: #d9c39a;
+  background-image: linear-gradient(rgba(244, 234, 211, .25), rgba(244, 234, 211, .25)), url('img/papel.jpg');
+}
+
+h1, h2, h3, h4 { font-family: var(--display); font-weight: 400; margin: 0; color: var(--vino); }
+p { margin: 0; }
+
+:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+
+/* ============ Hoja de acceso (login / registro) ============ */
+.centro {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 28px 14px;
+}
+
+.pagina {
+  position: relative;
+  width: min(480px, 100%);
+  padding: 40px 38px 32px;
+  background-color: var(--crema);
+  background-image: linear-gradient(rgba(248, 239, 217, .55), rgba(248, 239, 217, .55)), url('img/papel.jpg');
+  background-size: cover;
+  border: 1px solid var(--oro);
+  border-radius: 3px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .55);
+}
+.pagina.ancha { width: min(680px, 100%); }
+/* Segundo filete dorado, como en las portadas de libros antiguos */
+.pagina::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid var(--oro);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.encabezado { text-align: center; margin-bottom: 26px; }
+.encabezado h1 { font-size: 2.6rem; line-height: 1.05; }
+.encabezado h2 { font-size: 2rem; line-height: 1.1; }
+.encabezado p { margin-top: 8px; color: var(--tinta-suave); font-style: italic; }
+.adorno { display: block; margin: 12px auto 0; width: 150px; height: 14px; }
+
+/* ============ Formularios ============ */
+.campo { margin-bottom: 15px; }
+.fila { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+
+label, .etiqueta {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+  font-size: .98rem;
+  color: var(--tinta-suave);
+}
+
+input, select {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--tinta);
+  background: var(--campo);
+  border: 1px solid var(--linea);
+  border-radius: 3px;
+  box-shadow: inset 0 1px 2px rgba(60, 40, 20, .12);
+}
+input::placeholder { color: #7d6a52; opacity: 1; }
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--vino);
+  box-shadow: 0 0 0 3px rgba(184, 145, 63, .45);
+}
+input[readonly] { background: rgba(225, 210, 175, .55); color: var(--tinta-suave); }
+
+.ayuda { margin-top: 4px; font-size: .92rem; color: var(--tinta-suave); font-style: italic; }
+.mensaje { margin: 0 0 12px; padding: 8px 12px; border-radius: 3px; font-weight: 600; font-size: 1rem; }
+.mensaje.error { color: var(--error); background: rgba(143, 29, 29, .09); border-left: 3px solid var(--error); }
+.mensaje.ok { color: var(--verde); background: rgba(59, 90, 52, .1); border-left: 3px solid var(--verde); }
+
+.separador {
+  margin: 22px 0 16px;
+  padding-bottom: 4px;
+  font-family: var(--display);
+  font-size: 1.3rem;
+  color: var(--vino);
+  border-bottom: 3px double var(--oro);
+}
+
+/* ============ Botones ============ */
+.btn {
+  display: inline-block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 11px 18px;
+  font-family: var(--display);
+  font-size: 1.2rem;
+  color: var(--crema);
+  background: var(--vino);
+  border: 1px solid var(--vino-hondo);
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 2px var(--vino), inset 0 0 0 3px var(--oro);
+  cursor: pointer;
+  transition: background-color .2s ease;
+}
+.btn:hover { background: var(--vino-hondo); }
+.btn:disabled { opacity: .6; cursor: progress; }
+
+.btn.sec {
+  width: auto;
+  margin: 0;
+  padding: 6px 14px;
+  font-size: 1.05rem;
+  color: var(--crema);
+  background: transparent;
+  border: 1px solid var(--oro);
+  box-shadow: none;
+}
+.btn.sec:hover { background: rgba(214, 181, 101, .18); }
+
+.btn.peligro { background: var(--error); border-color: #5e1010; box-shadow: inset 0 0 0 2px var(--error), inset 0 0 0 3px #e0b8a0; }
+.btn.peligro:hover { background: #701616; }
+
+.enlace {
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--vino);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--oro);
+  cursor: pointer;
+}
+.cambio-vista { margin-top: 20px; text-align: center; color: var(--tinta-suave); }
+
+/* ============ Panel principal ============ */
+.cabecera {
+  background-color: var(--cuero);
+  background-image: linear-gradient(rgba(18, 12, 8, .35), rgba(18, 12, 8, .35)), url('img/cubierta.jpg');
+  background-size: cover;
+  background-position: center;
+  border-bottom: 3px double var(--oro);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+}
+.cabecera-in {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.cabecera h1 { font-size: 1.9rem; color: var(--oro-claro); }
+.usuario { display: flex; align-items: center; gap: 14px; color: var(--crema); }
+
+.panel { max-width: 1000px; margin: 0 auto; padding: 26px 20px 60px; }
+
+.hoja {
+  position: relative;
+  padding: 26px 28px;
+  background: var(--hoja);
+  border: 1px solid var(--oro);
+  border-radius: 3px;
+  box-shadow: 0 6px 18px rgba(60, 40, 20, .25);
+}
+
+/* Saldo actual */
+.saldo {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.saldo-etq { font-size: 1.05rem; color: var(--tinta-suave); font-style: italic; }
+.cifra {
+  font-family: var(--display);
+  font-size: clamp(2.6rem, 8vw, 4rem);
+  line-height: 1.1;
+  color: var(--vino);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.cifra.positivo { color: var(--verde); }
+.saldo-principal { padding-bottom: 8px; border-bottom: 3px double var(--oro); min-width: 280px; }
+.saldo-detalle { display: flex; gap: 28px; margin: 0; }
+.saldo-detalle dt { font-size: .98rem; color: var(--tinta-suave); }
+.saldo-detalle dd { margin: 0; font-family: var(--display); font-size: 1.5rem; font-variant-numeric: lining-nums tabular-nums; }
+.saldo-detalle .ing { color: var(--verde); }
+.saldo-detalle .gas { color: var(--vino); }
+
+/* Pestañas */
+.pestanas { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: -1px; position: relative; z-index: 1; }
+.pestana {
+  padding: 9px 20px;
+  font-family: var(--display);
+  font-size: 1.15rem;
+  color: var(--tinta-suave);
+  background: rgba(225, 208, 168, .75);
+  border: 1px solid var(--linea);
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+  cursor: pointer;
+}
+.pestana:hover { color: var(--vino); }
+.pestana[aria-selected="true"] {
+  color: var(--vino);
+  background: var(--hoja);
+  border-color: var(--oro);
+  border-top: 3px solid var(--vino);
+  padding-top: 7px;
+}
+.pestanas ~ .hoja { border-top-left-radius: 0; }
+
+.hoja h2 { font-size: 1.7rem; margin-bottom: 4px; }
+.hoja .sub { margin-bottom: 18px; color: var(--tinta-suave); font-style: italic; }
+
+/* Filtro del historial */
+.filtro { display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; margin-bottom: 18px; }
+.segmento { display: inline-flex; border: 1px solid var(--linea); border-radius: 3px; overflow: hidden; }
+.segmento label { margin: 0; cursor: pointer; }
+.segmento input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.segmento span {
+  display: block;
+  padding: 9px 18px;
+  font-weight: 600;
+  color: var(--tinta-suave);
+  background: var(--campo);
+}
+.segmento input:checked + span { color: var(--crema); background: var(--vino); }
+.segmento input:focus-visible + span { outline: 2px solid var(--oro); outline-offset: -4px; }
+.filtro .campo { margin: 0; min-width: 180px; }
+
+/* Libro mayor */
+.tabla-wrap { overflow-x: auto; }
+.libro { width: 100%; border-collapse: collapse; font-variant-numeric: lining-nums tabular-nums; }
+.libro th {
+  padding: 8px 12px;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1.1rem;
+  text-align: left;
+  color: var(--vino);
+  border-bottom: 3px double var(--oro);
+}
+.libro td { padding: 9px 12px; border-bottom: 1px solid rgba(101, 80, 60, .28); vertical-align: top; }
+.libro .num { text-align: right; white-space: nowrap; border-left: 1px solid var(--linea); min-width: 120px; }
+.libro .ing { color: var(--verde); }
+.libro .gas { color: var(--vino); }
+.libro .fecha { white-space: nowrap; color: var(--tinta-suave); }
+.libro tfoot td { font-weight: 600; border-top: 3px double var(--oro); border-bottom: 0; }
+.libro .vacio { text-align: center; padding: 26px 12px; color: var(--tinta-suave); font-style: italic; }
+.libro .accion { width: 1%; text-align: right; }
+.quitar {
+  padding: 2px 8px;
+  font: inherit;
+  font-size: .92rem;
+  color: var(--error);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.quitar:hover { border-color: var(--error); }
+.neto-periodo { margin-top: 12px; text-align: right; color: var(--tinta-suave); }
+.neto-periodo strong { font-family: var(--display); font-size: 1.3rem; font-weight: 400; color: var(--tinta); }
+
+/* Mi cuenta */
+.tarjeta-fija {
+  display: inline-block;
+  padding: 8px 14px;
+  margin-bottom: 15px;
+  border: 1px dashed var(--linea);
+  border-radius: 3px;
+  background: rgba(225, 210, 175, .45);
+}
+.zona-peligro {
+  margin-top: 26px;
+  padding: 18px 20px;
+  background: rgba(143, 29, 29, .07);
+  border: 1px solid var(--error);
+  border-radius: 3px;
+}
+.zona-peligro h3 { color: var(--error); font-size: 1.4rem; margin-bottom: 4px; }
+.zona-peligro p { margin-bottom: 12px; }
+
+/* Aviso emergente */
+#aviso {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  max-width: min(92vw, 460px);
+  padding: 11px 20px;
+  color: var(--crema);
+  background: var(--cuero);
+  border: 1px solid var(--oro);
+  border-radius: 3px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+  z-index: 50;
+}
+
+@media (max-width: 600px) {
+  .fila { grid-template-columns: 1fr; }
+  .pagina { padding: 32px 22px 26px; }
+  .hoja { padding: 20px 16px; }
+  .saldo-principal { min-width: 0; width: 100%; }
+  .pestana { padding: 8px 12px; font-size: 1.05rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body class="vista-acceso">
+
+<div id="aviso" role="status" aria-live="polite" hidden></div>
+
+<!-- ======================= LOGIN ======================= -->
+<main id="vista-login" class="centro">
+  <section class="pagina" aria-labelledby="titulo-login">
+    <header class="encabezado">
+      <h1 id="titulo-login">Libro contable</h1>
+      <svg class="adorno" viewBox="0 0 150 14" aria-hidden="true">
+        <line x1="0" y1="7" x2="62" y2="7" stroke="#b8913f" stroke-width="1"/>
+        <line x1="88" y1="7" x2="150" y2="7" stroke="#b8913f" stroke-width="1"/>
+        <path d="M75 1 L81 7 L75 13 L69 7 Z" fill="#b8913f"/>
+      </svg>
+      <p>Tus ingresos y gastos, día a día.</p>
+    </header>
+
+    <form id="form-login" novalidate>
+      <div class="campo">
+        <label for="login-email">Correo electrónico</label>
+        <input type="email" id="login-email" autocomplete="email" required placeholder="nombre@correo.com">
+      </div>
+      <div class="campo">
+        <label for="login-password">Contraseña</label>
+        <input type="password" id="login-password" autocomplete="current-password" required>
+      </div>
+      <p id="msg-login" class="mensaje error" role="alert" hidden></p>
+      <button type="submit" class="btn">Entrar</button>
+    </form>
+
+    <p class="cambio-vista">¿Aún no tienes cuenta? <button type="button" class="enlace" id="ir-registro">Crear cuenta</button></p>
+  </section>
+</main>
+
+<!-- ======================= REGISTRO ======================= -->
+<main id="vista-registro" class="centro" hidden>
+  <section class="pagina ancha" aria-labelledby="titulo-registro">
+    <header class="encabezado">
+      <h2 id="titulo-registro">Crear cuenta</h2>
+      <svg class="adorno" viewBox="0 0 150 14" aria-hidden="true">
+        <line x1="0" y1="7" x2="62" y2="7" stroke="#b8913f" stroke-width="1"/>
+        <line x1="88" y1="7" x2="150" y2="7" stroke="#b8913f" stroke-width="1"/>
+        <path d="M75 1 L81 7 L75 13 L69 7 Z" fill="#b8913f"/>
+      </svg>
+    </header>
+
+    <form id="form-registro" novalidate>
+      <div class="fila">
+        <div class="campo">
+          <label for="reg-nombres">Nombres</label>
+          <input type="text" id="reg-nombres" autocomplete="given-name" required>
+        </div>
+        <div class="campo">
+          <label for="reg-apellidos">Apellidos</label>
+          <input type="text" id="reg-apellidos" autocomplete="family-name" required>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="reg-email">Correo electrónico</label>
+        <input type="email" id="reg-email" autocomplete="email" required placeholder="nombre@correo.com">
+      </div>
+
+      <div class="fila">
+        <div class="campo">
+          <label for="reg-telefono">Número de teléfono</label>
+          <input type="tel" id="reg-telefono" autocomplete="tel" required placeholder="300 123 4567">
+        </div>
+        <div class="campo">
+          <label for="reg-direccion">Dirección</label>
+          <input type="text" id="reg-direccion" autocomplete="street-address" required>
+        </div>
+      </div>
+
+      <h3 class="separador">Tarjeta bancaria</h3>
+
+      <div class="campo">
+        <label for="reg-banco">Banco de la tarjeta</label>
+        <select id="reg-banco" required>
+          <option value="" selected disabled>Elige una opción</option>
+          <option value="Visa">Visa</option>
+          <option value="Mastercard">Mastercard</option>
+          <option value="American Express">American Express</option>
+          <option value="Diners Club">Diners Club</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="reg-tarjeta">Número de tarjeta</label>
+        <input type="text" id="reg-tarjeta" inputmode="numeric" autocomplete="off" required placeholder="0000 0000 0000 0000">
+        <p class="ayuda">Solo se guardan los últimos 4 dígitos. El número completo nunca se almacena.</p>
+      </div>
+
+      <h3 class="separador">Acceso</h3>
+
+      <div class="fila">
+        <div class="campo">
+          <label for="reg-password">Contraseña</label>
+          <input type="password" id="reg-password" autocomplete="new-password" required minlength="8">
+          <p class="ayuda">Mínimo 8 caracteres.</p>
+        </div>
+        <div class="campo">
+          <label for="reg-password2">Repite la contraseña</label>
+          <input type="password" id="reg-password2" autocomplete="new-password" required>
+        </div>
+      </div>
+
+      <p id="msg-registro" class="mensaje error" role="alert" hidden></p>
+      <button type="submit" class="btn">Crear cuenta</button>
+    </form>
+
+    <p class="cambio-vista">¿Ya tienes cuenta? <button type="button" class="enlace" id="ir-login">Entrar</button></p>
+  </section>
+</main>
+
+<!-- ======================= PANEL PRINCIPAL ======================= -->
+<div id="vista-panel" hidden>
+  <header class="cabecera">
+    <div class="cabecera-in">
+      <h1>Libro contable</h1>
+      <div class="usuario">
+        <span id="nombre-usuario"></span>
+        <button type="button" class="btn sec" id="btn-salir">Cerrar sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="panel">
+    <!-- Saldo actual -->
+    <section class="saldo" aria-label="Saldo actual">
+      <div class="saldo-principal">
+        <p class="saldo-etq">Saldo actual</p>
+        <p class="cifra" id="saldo">$ 0</p>
+      </div>
+      <dl class="saldo-detalle">
+        <div><dt>Ingresos acumulados</dt><dd class="ing" id="tot-ingresos">$ 0</dd></div>
+        <div><dt>Gastos acumulados</dt><dd class="gas" id="tot-gastos">$ 0</dd></div>
+      </dl>
+    </section>
+
+    <div class="pestanas" role="tablist" aria-label="Secciones del panel">
+      <button class="pestana" role="tab" id="t-libro" aria-controls="p-libro" aria-selected="true" data-tab="libro">Libro</button>
+      <button class="pestana" role="tab" id="t-ingresos" aria-controls="p-ingresos" aria-selected="false" data-tab="ingresos">Ingresos</button>
+      <button class="pestana" role="tab" id="t-gastos" aria-controls="p-gastos" aria-selected="false" data-tab="gastos">Gastos</button>
+      <button class="pestana" role="tab" id="t-cuenta" aria-controls="p-cuenta" aria-selected="false" data-tab="cuenta">Mi cuenta</button>
+    </div>
+
+    <!-- Libro (historial) -->
+    <section class="hoja" id="p-libro" role="tabpanel" aria-labelledby="t-libro">
+      <h2>Historial de movimientos</h2>
+      <p class="sub">Consulta lo registrado en un día o en un mes completo.</p>
+
+      <div class="filtro">
+        <div>
+          <span class="etiqueta" id="lbl-modo">Ver por</span>
+          <div class="segmento" role="radiogroup" aria-labelledby="lbl-modo">
+            <label><input type="radio" name="modo" value="mes" checked><span>Mes</span></label>
+            <label><input type="radio" name="modo" value="dia"><span>Día</span></label>
+          </div>
+        </div>
+        <div class="campo" id="caja-mes">
+          <label for="filtro-mes">Mes</label>
+          <input type="month" id="filtro-mes">
+        </div>
+        <div class="campo" id="caja-dia" hidden>
+          <label for="filtro-dia">Día</label>
+          <input type="date" id="filtro-dia">
+        </div>
+      </div>
+
+      <div class="tabla-wrap">
+        <table class="libro">
+          <thead>
+            <tr>
+              <th scope="col">Fecha</th>
+              <th scope="col">Descripción</th>
+              <th scope="col" class="num">Ingreso</th>
+              <th scope="col" class="num">Gasto</th>
+              <th scope="col"><span class="sr-only" style="position:absolute;left:-9999px">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody id="cuerpo-libro"></tbody>
+          <tfoot id="pie-libro" hidden>
+            <tr>
+              <td colspan="2">Total del periodo</td>
+              <td class="num ing" id="per-ingresos"></td>
+              <td class="num gas" id="per-gastos"></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <p class="neto-periodo" id="neto-periodo" hidden>Resultado del periodo: <strong id="per-neto"></strong></p>
+    </section>
+
+    <!-- Ingresos -->
+    <section class="hoja" id="p-ingresos" role="tabpanel" aria-labelledby="t-ingresos" hidden>
+      <h2>Registrar un ingreso</h2>
+      <p class="sub">El monto se suma a tu saldo actual.</p>
+      <form id="form-ingreso" data-tipo="ingreso" class="form-mov" novalidate>
+        <div class="fila">
+          <div class="campo">
+            <label for="ingreso-monto">Monto</label>
+            <input type="number" id="ingreso-monto" min="0.01" step="0.01" inputmode="decimal" required placeholder="0">
+          </div>
+          <div class="campo">
+            <label for="ingreso-fecha">Fecha</label>
+            <input type="date" id="ingreso-fecha" required>
+          </div>
+        </div>
+        <div class="campo">
+          <label for="ingreso-desc">Descripción</label>
+          <input type="text" id="ingreso-desc" maxlength="120" required placeholder="Sueldo, venta, regalo…">
+        </div>
+        <p class="mensaje error" role="alert" hidden></p>
+        <button type="submit" class="btn">Registrar ingreso</button>
+      </form>
+    </section>
+
+    <!-- Gastos -->
+    <section class="hoja" id="p-gastos" role="tabpanel" aria-labelledby="t-gastos" hidden>
+      <h2>Registrar un gasto</h2>
+      <p class="sub">El monto se descuenta de tu saldo actual.</p>
+      <form id="form-gasto" data-tipo="gasto" class="form-mov" novalidate>
+        <div class="fila">
+          <div class="campo">
+            <label for="gasto-monto">Monto</label>
+            <input type="number" id="gasto-monto" min="0.01" step="0.01" inputmode="decimal" required placeholder="0">
+          </div>
+          <div class="campo">
+            <label for="gasto-fecha">Fecha</label>
+            <input type="date" id="gasto-fecha" required>
+          </div>
+        </div>
+        <div class="campo">
+          <label for="gasto-desc">Descripción</label>
+          <input type="text" id="gasto-desc" maxlength="120" required placeholder="Mercado, arriendo, transporte…">
+        </div>
+        <p class="mensaje error" role="alert" hidden></p>
+        <button type="submit" class="btn">Registrar gasto</button>
+      </form>
+    </section>
+
+    <!-- Mi cuenta -->
+    <section class="hoja" id="p-cuenta" role="tabpanel" aria-labelledby="t-cuenta" hidden>
+      <h2>Mis datos</h2>
+      <p class="sub">Puedes cambiar tus datos personales. La tarjeta no se puede modificar.</p>
+
+      <p class="tarjeta-fija" id="tarjeta-info"></p>
+
+      <form id="form-perfil" novalidate>
+        <div class="fila">
+          <div class="campo">
+            <label for="perfil-nombres">Nombres</label>
+            <input type="text" id="perfil-nombres" required>
+          </div>
+          <div class="campo">
+            <label for="perfil-apellidos">Apellidos</label>
+            <input type="text" id="perfil-apellidos" required>
+          </div>
+        </div>
+        <div class="campo">
+          <label for="perfil-email">Correo electrónico</label>
+          <input type="email" id="perfil-email" readonly>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label for="perfil-telefono">Número de teléfono</label>
+            <input type="tel" id="perfil-telefono" required>
+          </div>
+          <div class="campo">
+            <label for="perfil-direccion">Dirección</label>
+            <input type="text" id="perfil-direccion" required>
+          </div>
+        </div>
+        <p id="msg-perfil" class="mensaje error" role="alert" hidden></p>
+        <button type="submit" class="btn">Guardar cambios</button>
+      </form>
+
+      <h3 class="separador">Cambiar contraseña</h3>
+      <form id="form-clave" novalidate>
+        <div class="fila">
+          <div class="campo">
+            <label for="clave-nueva">Nueva contraseña</label>
+            <input type="password" id="clave-nueva" autocomplete="new-password" minlength="8" required>
+          </div>
+          <div class="campo">
+            <label for="clave-nueva2">Repite la nueva contraseña</label>
+            <input type="password" id="clave-nueva2" autocomplete="new-password" required>
+          </div>
+        </div>
+        <p id="msg-clave" class="mensaje error" role="alert" hidden></p>
+        <button type="submit" class="btn">Cambiar contraseña</button>
+      </form>
+
+      <div class="zona-peligro">
+        <h3>Eliminar mi cuenta</h3>
+        <p>Se borrarán tu perfil y todos tus movimientos. Esta acción no se puede deshacer.</p>
+        <form id="form-eliminar" novalidate>
+          <div class="campo">
+            <label for="eliminar-password">Escribe tu contraseña para confirmar</label>
+            <input type="password" id="eliminar-password" autocomplete="current-password" required>
+          </div>
+          <p id="msg-eliminar" class="mensaje error" role="alert" hidden></p>
+          <button type="submit" class="btn peligro">Eliminar mi cuenta</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ================================================================
+   Configuración de Supabase
+   La clave "publishable" es pública y puede ir en el frontend.
+   NUNCA pongas aquí la clave secret / service_role.
+   ================================================================ */
+const SUPABASE_URL = 'https://ykamfrpsvlqwuvlyisnz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_l5h5xMQFYuEC320HqzDOdA_Yg7JkOOY';
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ======================= Utilidades ======================= */
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+const dinero = new Intl.NumberFormat('es-CO', {
+  style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 2
+});
+const MONTO_MAX = 9999999999.99; // límite de numeric(12,2)
+
+function fechaLocal(d = new Date()) {
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+function formatearFecha(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+let temporizadorAviso;
+function avisar(texto) {
+  const el = $('#aviso');
+  el.textContent = texto;
+  el.hidden = false;
+  clearTimeout(temporizadorAviso);
+  temporizadorAviso = setTimeout(() => { el.hidden = true; }, 3500);
+}
+
+function mostrarMensaje(el, texto, tipo = 'error') {
+  if (!texto) { el.hidden = true; el.textContent = ''; return; }
+  el.textContent = texto;
+  el.className = 'mensaje ' + tipo;
+  el.hidden = false;
+}
+
+async function conCarga(boton, textoCarga, tarea) {
+  const original = boton.textContent;
+  boton.disabled = true;
+  boton.textContent = textoCarga;
+  try { return await tarea(); }
+  finally { boton.disabled = false; boton.textContent = original; }
+}
+
+const emailValido = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+const telefonoValido = (v) => { const d = v.replace(/\D/g, ''); return d.length >= 7 && d.length <= 15 && /^[+\d\s()-]+$/.test(v); };
+
+/* ======================= Tarjeta: Luhn y marca ======================= */
+const soloDigitos = (v) => v.replace(/\D/g, '');
+
+function luhn(num) {
+  let suma = 0, doble = false;
+  for (let i = num.length - 1; i >= 0; i--) {
+    let n = Number(num[i]);
+    if (doble) { n *= 2; if (n > 9) n -= 9; }
+    suma += n;
+    doble = !doble;
+  }
+  return suma % 10 === 0;
+}
+
+function detectarMarca(num) {
+  if (/^4/.test(num)) return 'Visa';
+  if (/^(5[1-5]\d{2}|222[1-9]|22[3-9]\d|2[3-6]\d{2}|27[01]\d|2720)/.test(num)) return 'Mastercard';
+  if (/^3[47]/.test(num)) return 'American Express';
+  if (/^(30[0-5]|3095|36|38|39)/.test(num)) return 'Diners Club';
+  return null;
+}
+
+const LONGITUDES = {
+  'Visa': [13, 16, 19],
+  'Mastercard': [16],
+  'American Express': [15],
+  'Diners Club': [14, 15, 16, 17, 18, 19]
+};
+
+function validarTarjeta(num, marcaElegida) {
+  if (!num) return 'Escribe el número de tarjeta.';
+  const detectada = detectarMarca(num);
+  if (!detectada) return 'El número no corresponde a Visa, Mastercard, American Express ni Diners Club.';
+  if (detectada !== marcaElegida) return `El número parece de ${detectada}, pero elegiste ${marcaElegida}.`;
+  if (!LONGITUDES[detectada].includes(num.length)) return `Una tarjeta ${detectada} no tiene ${num.length} dígitos.`;
+  if (!luhn(num)) return 'El número de tarjeta no es válido. Revisa los dígitos.';
+  return '';
+}
+
+function formatearTarjeta(num) {
+  const marca = detectarMarca(num);
+  if (marca === 'American Express') {
+    return [num.slice(0, 4), num.slice(4, 10), num.slice(10, 15)].filter(Boolean).join(' ');
+  }
+  return num.replace(/(.{4})/g, '$1 ').trim();
+}
+
+/* ======================= Navegación entre vistas ======================= */
+function mostrarVista(nombre) {
+  ['login', 'registro', 'panel'].forEach((v) => { $('#vista-' + v).hidden = (v !== nombre); });
+  document.body.className = nombre === 'panel' ? 'vista-panel' : 'vista-acceso';
+  window.scrollTo(0, 0);
+}
+
+$('#ir-registro').addEventListener('click', () => { mostrarMensaje($('#msg-login'), ''); mostrarVista('registro'); $('#reg-nombres').focus(); });
+$('#ir-login').addEventListener('click', () => { mostrarMensaje($('#msg-registro'), ''); mostrarVista('login'); $('#login-email').focus(); });
+
+/* ======================= Estado ======================= */
+let perfil = null;   // fila de public.profiles del usuario actual
+let sesionUser = null;
+
+/* ======================= Registro ======================= */
+const tarjetaInput = $('#reg-tarjeta');
+tarjetaInput.addEventListener('input', () => {
+  const dig = soloDigitos(tarjetaInput.value).slice(0, 19);
+  tarjetaInput.value = formatearTarjeta(dig);
+  const marca = detectarMarca(dig);
+  if (marca && dig.length >= 2) $('#reg-banco').value = marca;
+});
+
+function traducirErrorAuth(error) {
+  const msg = (error.message || '').toLowerCase();
+  const code = error.code || '';
+  if (code === 'over_email_send_rate_limit' || error.status === 429) return 'Se alcanzó el límite de envíos. Espera unos minutos e inténtalo de nuevo.';
+  if (code === 'email_provider_disabled') return 'El registro por correo está desactivado en Supabase.';
+  if (code === 'user_already_exists' || msg.includes('already registered')) return 'Ese correo ya tiene una cuenta. Intenta entrar.';
+  if (code === 'weak_password' || msg.includes('password')) return 'La contraseña es demasiado débil. Usa al menos 8 caracteres.';
+  if (code === 'email_address_invalid' || msg.includes('invalid email')) return 'El correo no es válido.';
+  if (code === 'invalid_credentials' || msg.includes('invalid login')) return 'Correo o contraseña incorrectos.';
+  if (code === 'email_not_confirmed') return 'Debes confirmar tu correo antes de entrar.';
+  return 'No se pudo completar la acción: ' + (error.message || 'error desconocido');
+}
+
+$('#form-registro').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = $('#msg-registro');
+  mostrarMensaje(msg, '');
+
+  const datos = {
+    nombres: $('#reg-nombres').value.trim(),
+    apellidos: $('#reg-apellidos').value.trim(),
+    email: $('#reg-email').value.trim().toLowerCase(),
+    telefono: $('#reg-telefono').value.trim(),
+    direccion: $('#reg-direccion').value.trim()
+  };
+  const banco = $('#reg-banco').value;
+  const numTarjeta = soloDigitos(tarjetaInput.value);
+  const clave = $('#reg-password').value;
+  const clave2 = $('#reg-password2').value;
+
+  if (!datos.nombres || !datos.apellidos) return mostrarMensaje(msg, 'Escribe tus nombres y apellidos.');
+  if (!emailValido(datos.email)) return mostrarMensaje(msg, 'Escribe un correo válido.');
+  if (!telefonoValido(datos.telefono)) return mostrarMensaje(msg, 'Escribe un número de teléfono válido.');
+  if (datos.direccion.length < 5) return mostrarMensaje(msg, 'Escribe tu dirección.');
+  if (!banco) return mostrarMensaje(msg, 'Elige el banco de tu tarjeta.');
+  const errTarjeta = validarTarjeta(numTarjeta, banco);
+  if (errTarjeta) return mostrarMensaje(msg, errTarjeta);
+  if (clave.length < 8) return mostrarMensaje(msg, 'La contraseña debe tener al menos 8 caracteres.');
+  if (clave !== clave2) return mostrarMensaje(msg, 'Las contraseñas no coinciden.');
+
+  await conCarga(e.submitter || $('#form-registro button[type=submit]'), 'Creando cuenta…', async () => {
+    const { data, error } = await sb.auth.signUp({ email: datos.email, password: clave });
+    if (error) return mostrarMensaje(msg, traducirErrorAuth(error));
+
+    if (!data.session) {
+      return mostrarMensaje(msg, 'La cuenta se creó, pero Supabase exige confirmar el correo antes de entrar. Desactiva «Confirm email» en Authentication → Providers → Email.');
+    }
+
+    // Solo se guardan los últimos 4 dígitos: el número completo nunca sale del navegador.
+    const { error: errPerfil } = await sb.from('profiles').insert({
+      id: data.user.id,
+      nombres: datos.nombres,
+      apellidos: datos.apellidos,
+      email: datos.email,
+      telefono: datos.telefono,
+      direccion: datos.direccion,
+      card_last4: numTarjeta.slice(-4),
+      card_brand: banco
+    });
+
+    if (errPerfil) {
+      await sb.auth.signOut();
+      return mostrarMensaje(msg, 'No se pudo guardar tu perfil: ' + errPerfil.message);
+    }
+
+    $('#form-registro').reset();
+    await entrarAlPanel(data.user);
+    avisar('Cuenta creada. Bienvenido.');
+  });
+});
+
+/* ======================= Login / Logout ======================= */
+$('#form-login').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = $('#msg-login');
+  mostrarMensaje(msg, '');
+  const email = $('#login-email').value.trim().toLowerCase();
+  const clave = $('#login-password').value;
+  if (!emailValido(email) || !clave) return mostrarMensaje(msg, 'Escribe tu correo y tu contraseña.');
+
+  await conCarga(e.submitter || $('#form-login button[type=submit]'), 'Entrando…', async () => {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: clave });
+    if (error) return mostrarMensaje(msg, traducirErrorAuth(error));
+    $('#form-login').reset();
+    const ok = await entrarAlPanel(data.user);
+    if (!ok) mostrarMensaje(msg, 'Tu usuario no tiene un perfil asociado. Crea una cuenta nueva.');
+  });
+});
+
+$('#btn-salir').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  perfil = null; sesionUser = null;
+  mostrarVista('login');
+});
+
+/* ======================= Entrada al panel ======================= */
+async function entrarAlPanel(user) {
+  const { data, error } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+  if (error || !data) {
+    await sb.auth.signOut();
+    mostrarVista('login');
+    return false;
+  }
+  perfil = data;
+  sesionUser = user;
+
+  $('#nombre-usuario').textContent = `${perfil.nombres} ${perfil.apellidos}`;
+  rellenarPerfil();
+
+  // Valores por defecto de filtros y formularios
+  const hoy = fechaLocal();
+  $('#filtro-mes').value = hoy.slice(0, 7);
+  $('#filtro-dia').value = hoy;
+  $('#ingreso-fecha').value = hoy;
+  $('#gasto-fecha').value = hoy;
+
+  cambiarPestana('libro');
+  mostrarVista('panel');
+  await Promise.all([cargarSaldo(), cargarHistorial()]);
+  return true;
+}
+
+/* ======================= Saldo ======================= */
+function pintarSaldo(ing, gas, bal) {
+  const saldo = $('#saldo');
+  saldo.textContent = dinero.format(bal);
+  saldo.classList.toggle('positivo', bal > 0);
+  $('#tot-ingresos').textContent = dinero.format(ing);
+  $('#tot-gastos').textContent = dinero.format(gas);
+}
+
+async function cargarSaldo() {
+  const { data, error } = await sb.from('balance_usuario').select('total_ingresos,total_gastos,balance').maybeSingle();
+  if (error) { avisar('No se pudo cargar el saldo.'); return; }
+  if (!data) return pintarSaldo(0, 0, 0);
+  pintarSaldo(Number(data.total_ingresos), Number(data.total_gastos), Number(data.balance));
+}
+
+/* ======================= Historial ======================= */
+function modoActual() { return document.querySelector('input[name="modo"]:checked').value; }
+
+function rangoFechas() {
+  if (modoActual() === 'dia') {
+    const f = $('#filtro-dia').value || fechaLocal();
+    return [f, f];
+  }
+  const m = $('#filtro-mes').value || fechaLocal().slice(0, 7);
+  const [y, mm] = m.split('-').map(Number);
+  const ultimo = new Date(y, mm, 0).getDate();
+  return [`${m}-01`, `${m}-${String(ultimo).padStart(2, '0')}`];
+}
+
+function filaMensaje(texto) {
+  const tr = document.createElement('tr');
+  const td = document.createElement('td');
+  td.colSpan = 5; td.className = 'vacio'; td.textContent = texto;
+  tr.appendChild(td);
+  return tr;
+}
+
+async function cargarHistorial() {
+  const cuerpo = $('#cuerpo-libro');
+  cuerpo.replaceChildren(filaMensaje('Cargando movimientos…'));
+  $('#pie-libro').hidden = true;
+  $('#neto-periodo').hidden = true;
+
+  const [desde, hasta] = rangoFechas();
+  const { data, error } = await sb.from('movimientos')
+    .select('id,tipo,monto,descripcion,fecha')
+    .gte('fecha', desde).lte('fecha', hasta)
+    .order('fecha', { ascending: false })
+    .order('created_at', { ascending: false });
+
+  if (error) { cuerpo.replaceChildren(filaMensaje('No se pudo cargar el historial. Inténtalo de nuevo.')); return; }
+  if (!data.length) {
+    cuerpo.replaceChildren(filaMensaje(modoActual() === 'dia'
+      ? 'No hay movimientos en este día. Regístralos en Ingresos o Gastos.'
+      : 'No hay movimientos en este mes. Regístralos en Ingresos o Gastos.'));
+    return;
+  }
+
+  let ing = 0, gas = 0;
+  const filas = data.map((m) => {
+    const monto = Number(m.monto);
+    const tr = document.createElement('tr');
+
+    const tdFecha = document.createElement('td'); tdFecha.className = 'fecha'; tdFecha.textContent = formatearFecha(m.fecha);
+    const tdDesc = document.createElement('td'); tdDesc.textContent = m.descripcion || '—';
+    const tdIng = document.createElement('td'); tdIng.className = 'num ing';
+    const tdGas = document.createElement('td'); tdGas.className = 'num gas';
+    if (m.tipo === 'ingreso') { ing += monto; tdIng.textContent = dinero.format(monto); }
+    else { gas += monto; tdGas.textContent = dinero.format(monto); }
+
+    const tdAcc = document.createElement('td'); tdAcc.className = 'accion';
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'quitar'; btn.textContent = 'Eliminar';
+    btn.setAttribute('aria-label', `Eliminar movimiento: ${m.descripcion || m.tipo}`);
+    btn.addEventListener('click', () => eliminarMovimiento(m));
+    tdAcc.appendChild(btn);
+
+    tr.append(tdFecha, tdDesc, tdIng, tdGas, tdAcc);
+    return tr;
+  });
+  cuerpo.replaceChildren(...filas);
+
+  $('#per-ingresos').textContent = dinero.format(ing);
+  $('#per-gastos').textContent = dinero.format(gas);
+  $('#per-neto').textContent = dinero.format(ing - gas);
+  $('#pie-libro').hidden = false;
+  $('#neto-periodo').hidden = false;
+}
+
+async function eliminarMovimiento(m) {
+  const detalle = `${m.tipo} de ${dinero.format(Number(m.monto))}${m.descripcion ? ' («' + m.descripcion + '»)' : ''}`;
+  if (!confirm(`¿Eliminar este ${detalle}? El saldo se recalculará.`)) return;
+  const { error } = await sb.from('movimientos').delete().eq('id', m.id);
+  if (error) return avisar('No se pudo eliminar el movimiento.');
+  avisar('Movimiento eliminado.');
+  await Promise.all([cargarSaldo(), cargarHistorial()]);
+}
+
+$$('input[name="modo"]').forEach((r) => r.addEventListener('change', () => {
+  const dia = modoActual() === 'dia';
+  $('#caja-dia').hidden = !dia;
+  $('#caja-mes').hidden = dia;
+  cargarHistorial();
+}));
+$('#filtro-mes').addEventListener('change', cargarHistorial);
+$('#filtro-dia').addEventListener('change', cargarHistorial);
+
+/* ======================= Ingresos y gastos ======================= */
+$$('.form-mov').forEach((form) => {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const tipo = form.dataset.tipo;
+    const msg = form.querySelector('.mensaje');
+    mostrarMensaje(msg, '');
+
+    const monto = Number(form.querySelector('input[type=number]').value);
+    const fecha = form.querySelector('input[type=date]').value;
+    const desc = form.querySelector('input[type=text]').value.trim();
+
+    if (!(monto > 0)) return mostrarMensaje(msg, 'El monto debe ser mayor que cero.');
+    if (monto > MONTO_MAX) return mostrarMensaje(msg, 'El monto es demasiado grande.');
+    if (!fecha) return mostrarMensaje(msg, 'Elige una fecha.');
+    if (!desc) return mostrarMensaje(msg, 'Escribe una descripción.');
+
+    await conCarga(form.querySelector('button[type=submit]'), 'Guardando…', async () => {
+      const { error } = await sb.from('movimientos').insert({
+        user_id: sesionUser.id, tipo, monto: Math.round(monto * 100) / 100, descripcion: desc, fecha
+      });
+      if (error) return mostrarMensaje(msg, 'No se pudo guardar: ' + error.message);
+
+      form.querySelector('input[type=number]').value = '';
+      form.querySelector('input[type=text]').value = '';
+      avisar(tipo === 'ingreso' ? 'Ingreso registrado.' : 'Gasto registrado.');
+      await Promise.all([cargarSaldo(), cargarHistorial()]);
+    });
+  });
+});
+
+/* ======================= Pestañas ======================= */
+function cambiarPestana(nombre) {
+  $$('.pestana').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === nombre)));
+  ['libro', 'ingresos', 'gastos', 'cuenta'].forEach((n) => { $('#p-' + n).hidden = (n !== nombre); });
+}
+$$('.pestana').forEach((t) => t.addEventListener('click', () => {
+  cambiarPestana(t.dataset.tab);
+  if (t.dataset.tab === 'libro') cargarHistorial();
+}));
+
+/* ======================= Mi cuenta ======================= */
+function rellenarPerfil() {
+  $('#perfil-nombres').value = perfil.nombres;
+  $('#perfil-apellidos').value = perfil.apellidos;
+  $('#perfil-email').value = perfil.email;
+  $('#perfil-telefono').value = perfil.telefono;
+  $('#perfil-direccion').value = perfil.direccion;
+  $('#tarjeta-info').textContent = `${perfil.card_brand} terminada en ${perfil.card_last4}`;
+}
+
+$('#form-perfil').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = $('#msg-perfil');
+  mostrarMensaje(msg, '');
+  const cambios = {
+    nombres: $('#perfil-nombres').value.trim(),
+    apellidos: $('#perfil-apellidos').value.trim(),
+    telefono: $('#perfil-telefono').value.trim(),
+    direccion: $('#perfil-direccion').value.trim()
+  };
+  if (!cambios.nombres || !cambios.apellidos) return mostrarMensaje(msg, 'Escribe tus nombres y apellidos.');
+  if (!telefonoValido(cambios.telefono)) return mostrarMensaje(msg, 'Escribe un número de teléfono válido.');
+  if (cambios.direccion.length < 5) return mostrarMensaje(msg, 'Escribe tu dirección.');
+
+  await conCarga(e.submitter || $('#form-perfil button[type=submit]'), 'Guardando…', async () => {
+    const { data, error } = await sb.from('profiles').update(cambios).eq('id', sesionUser.id).select().single();
+    if (error) return mostrarMensaje(msg, 'No se pudieron guardar los cambios: ' + error.message);
+    perfil = data;
+    $('#nombre-usuario').textContent = `${perfil.nombres} ${perfil.apellidos}`;
+    avisar('Datos actualizados.');
+  });
+});
+
+$('#form-clave').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = $('#msg-clave');
+  mostrarMensaje(msg, '');
+  const nueva = $('#clave-nueva').value;
+  if (nueva.length < 8) return mostrarMensaje(msg, 'La contraseña debe tener al menos 8 caracteres.');
+  if (nueva !== $('#clave-nueva2').value) return mostrarMensaje(msg, 'Las contraseñas no coinciden.');
+
+  await conCarga(e.submitter || $('#form-clave button[type=submit]'), 'Guardando…', async () => {
+    const { error } = await sb.auth.updateUser({ password: nueva });
+    if (error) return mostrarMensaje(msg, traducirErrorAuth(error));
+    $('#form-clave').reset();
+    avisar('Contraseña actualizada.');
+  });
+});
+
+$('#form-eliminar').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = $('#msg-eliminar');
+  mostrarMensaje(msg, '');
+  const clave = $('#eliminar-password').value;
+  if (!clave) return mostrarMensaje(msg, 'Escribe tu contraseña para confirmar.');
+  if (!confirm('¿Seguro que quieres eliminar tu cuenta y todos tus movimientos? No se puede deshacer.')) return;
+
+  await conCarga(e.submitter || $('#form-eliminar button[type=submit]'), 'Verificando…', async () => {
+    // 1) Verificar la contraseña
+    const { error: errClave } = await sb.auth.signInWithPassword({ email: sesionUser.email, password: clave });
+    if (errClave) return mostrarMensaje(msg, 'La contraseña es incorrecta.');
+
+    // 2) Borrar el usuario con una Edge Function (requiere la service key, que nunca va en el navegador)
+    const { error } = await sb.functions.invoke('delete-account');
+    if (error) {
+      return mostrarMensaje(msg, 'No se pudo eliminar la cuenta. Verifica que la función «delete-account» esté desplegada en Supabase.');
+    }
+
+    await sb.auth.signOut({ scope: 'local' });
+    perfil = null; sesionUser = null;
+    $('#form-eliminar').reset();
+    mostrarVista('login');
+    avisar('Tu cuenta fue eliminada.');
+  });
+});
+
+/* ======================= Inicio: restaurar sesión ======================= */
+(async function iniciar() {
+  const { data } = await sb.auth.getSession();
+  if (data.session) {
+    const ok = await entrarAlPanel(data.session.user);
+    if (ok) return;
+  }
+  mostrarVista('login');
+})();
+</script>
+</body>
+</html>
